@@ -30,7 +30,7 @@ class Level extends Entity {
         graphic = tiles;
     }
 
-    public function randomize(wallChance:Float = 0.45) {
+    private function randomize(wallChance:Float = 0.55) {
         // Randomize the map by setting each tile to a wall or a floor
         for(tileX in 0...grid.columns) {
             for(tileY in 0...grid.rows) {
@@ -39,23 +39,23 @@ class Level extends Entity {
         }
     }
 
-    public function cellularAutomata(minNeighbors:Int = 3, maxNeighbors:Int = 4) {
+    private function cellularAutomata(minNeighbors:Int = 4, maxNeighbors:Int = 5) {
         // Performs an iteration of cellular automata on the map
         var cloneGrid = grid.clone();
         for(tileX in 0...grid.columns) {
             for(tileY in 0...grid.rows) {
-                if(countNeighbors(tileX, tileY) > maxNeighbors) {
-                    cloneGrid.setTile(tileX, tileY, true);
-                }
-                else if(countNeighbors(tileX, tileY) < minNeighbors) {
+                if(countNeighbors(tileX, tileY) < minNeighbors) {
                     cloneGrid.setTile(tileX, tileY, false);
+                }
+                else if(countNeighbors(tileX, tileY) > maxNeighbors) {
+                    cloneGrid.setTile(tileX, tileY, true);
                 }
             }
         }
         grid = cloneGrid;
     }
 
-    public function countNeighbors(tileX:Int, tileY:Int) {
+    private function countNeighbors(tileX:Int, tileY:Int) {
         var count = 0;
         for(neighborX in [tileX - 1, tileX, tileX + 1]) {
             for(neighborY in [tileY - 1, tileY, tileY + 1]) {
@@ -71,12 +71,23 @@ class Level extends Entity {
         return count;
     }
 
+    private function invert() {
+        for(tileX in 0...grid.columns) {
+            for(tileY in 0...grid.rows) {
+                grid.setTile(tileX, tileY, !grid.getTile(tileX, tileY));
+            }
+        }
+    }
+
     override public function update() {
         if(Key.pressed(Key.R)) {
             randomize();
         }
         if(Key.pressed(Key.C)) {
             cellularAutomata();
+        }
+        if(Key.pressed(Key.I)) {
+            invert();
         }
         if(Key.pressed(Key.ANY)) {
             tiles.loadFromString(grid.saveToString(',', '\n', '1', '0'));
