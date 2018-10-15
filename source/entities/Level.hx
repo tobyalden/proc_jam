@@ -45,9 +45,13 @@ class Level extends Entity {
         for(tileX in 0...grid.columns) {
             for(tileY in 0...grid.rows) {
                 if(countNeighbors(tileX, tileY) < minNeighbors) {
+                    // If there are fewer neighboring walls than the minimum,
+                    // the tile becomes a floor
                     cloneGrid.setTile(tileX, tileY, false);
                 }
                 else if(countNeighbors(tileX, tileY) > maxNeighbors) {
+                    // If there are more neighboring walls than the maximum,
+                    // the tile becomes a wall
                     cloneGrid.setTile(tileX, tileY, true);
                 }
             }
