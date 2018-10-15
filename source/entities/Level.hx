@@ -6,7 +6,14 @@ import haxepunk.graphics.tile.*;
 import haxepunk.input.*;
 import haxepunk.masks.*;
 
+typedef Walker = {
+    var x:Int;
+    var y:Int;
+    var direction:String;
+}
+
 class Level extends Entity {
+    private var walkers:Array<Walker>;
     private var grid:Grid;
     private var tiles:Tilemap;
 
@@ -15,7 +22,7 @@ class Level extends Entity {
 
         // Create map data
         grid = new Grid(640, 360, 8, 8);
-        
+
         // Create tilemap from map data
         tiles = new Tilemap(
             'graphics/tiles.png',
@@ -73,6 +80,71 @@ class Level extends Entity {
         return count;
     }
 
+    private function drunkenWalk(
+        numberOfSteps:Int = 500,
+        changeDirectionChance:Float = 0.5,
+        spawnWalkerChance:Float = 0.05,
+        destroyWalkerChance:Float = 0.05,
+        maxWalkers:Int = 10
+    ) {
+        walkers = new Array<Walker>();
+
+        // Create a walker in the center of the map
+        walkers.push({
+            x: Std.int(grid.columns/2),
+            y: Std.int(grid.rows/2),
+            direction: HXP.choose('n', 'e', 's', 'w')
+        });
+
+        for(i in 0...numberOfSteps) {
+            for(walker in walkers) {
+                // Create a floor under the walker
+                grid.setTile(walker.x, walker.y, false);
+
+                // Move the walker
+                if(walker.direction == 'n') {
+                    walker.y -= 1;
+                }
+                else if(walker.direction == 'e') {
+                    walker.x += 1;
+                }
+                else if(walker.direction == 's') {
+                    walker.y += 1;
+                }
+                else if(walker.direction == 'w') {
+                    walker.x -= 1;
+                }
+
+                if(changeDirectionChance > Math.random()) {
+                    // Change the walker's direction
+                    var directions = ['n', 'e', 's', 'w'];
+                    directions.remove(walker.direction);
+                    walker.direction = directions[Std.random(3)];
+                }
+
+                if(
+                    walkers.length < maxWalkers
+                    && spawnWalkerChance > Math.random()
+                ) {
+                    // Spawn a new walker
+                    walkers.push({
+                        x: walker.x,
+                        y: walker.y,
+                        direction: HXP.choose('n', 'e', 's', 'w')
+                    });
+                }
+
+                if(
+                    walkers.length > 1
+                    && destroyWalkerChance > Math.random()
+                ) {
+                    // Destroy a walker
+                    walkers.remove(walkers[Std.random(walkers.length)]);
+                }
+            }
+        }
+    }
+
     private function invert() {
         for(tileX in 0...grid.columns) {
             for(tileY in 0...grid.rows) {
@@ -104,6 +176,9 @@ class Level extends Entity {
         }
         if(Key.pressed(Key.F)) {
             fill();
+        }
+        if(Key.pressed(Key.D)) {
+            drunkenWalk();
         }
         if(Key.pressed(Key.ANY)) {
             tiles.loadFromString(grid.saveToString(',', '\n', '1', '0'));
