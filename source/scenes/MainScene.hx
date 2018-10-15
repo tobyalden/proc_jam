@@ -1,10 +1,11 @@
 package scenes;
 
 import haxepunk.*;
+import haxepunk.graphics.*;
+import entities.*;
 
 class MainScene extends Scene {
     override public function begin() {
-	    // Insert your scene code here...
-
+        add(new Level(0, 0));
     }
 }
