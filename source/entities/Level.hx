@@ -15,8 +15,6 @@ class Level extends Entity {
 
         // Create map data
         grid = new Grid(640, 360, 8, 8);
-        randomize();
-        cellularAutomata();
         
         // Create tilemap from map data
         tiles = new Tilemap(
@@ -83,15 +81,29 @@ class Level extends Entity {
         }
     }
 
+    private function clear() {
+        grid.clearRect(0, 0, grid.columns, grid.rows);
+    }
+
+    private function fill() {
+        grid.setRect(0, 0, grid.columns, grid.rows);
+    }
+
     override public function update() {
         if(Key.pressed(Key.R)) {
             randomize();
         }
-        if(Key.pressed(Key.C)) {
+        if(Key.pressed(Key.A)) {
             cellularAutomata();
         }
         if(Key.pressed(Key.I)) {
             invert();
+        }
+        if(Key.pressed(Key.C)) {
+            clear();
+        }
+        if(Key.pressed(Key.F)) {
+            fill();
         }
         if(Key.pressed(Key.ANY)) {
             tiles.loadFromString(grid.saveToString(',', '\n', '1', '0'));
