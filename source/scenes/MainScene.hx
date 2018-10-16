@@ -20,6 +20,7 @@ F: Fill All
 D: Drunken Walk (Connected)
 U: Drunken Walk (Unconnected)
 N: Connect all rooms
+V: Diamond-square
 I: Invert
 C: Clear All
 1: Reset size

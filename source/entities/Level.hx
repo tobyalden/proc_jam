@@ -6,7 +6,7 @@ import haxepunk.graphics.tile.*;
 import haxepunk.input.*;
 import haxepunk.masks.*;
 import haxepunk.math.*;
-import hxnoise.Perlin;
+import hxnoise.*;
 import scenes.*;
 
 typedef Walker = {
@@ -27,6 +27,7 @@ class Level extends Entity {
     private var grid:Grid;
     private var tiles:Tilemap;
     private var perlin:Perlin;
+    private var diamondSquare:DiamondSquare;
 
     public function new(x:Float, y:Float) {
         super(x, y);
@@ -356,6 +357,23 @@ class Level extends Entity {
         }
     }
 
+    private function diamondSquareNoise() {
+        diamondSquare = new DiamondSquare(
+            grid.columns, grid.rows, TILE_SIZE, 3, randFunc
+        );
+        diamondSquare.diamondSquare();
+        for(tileX in 0...grid.columns) {
+            for(tileY in 0...grid.rows) {
+                var noise = diamondSquare.getValue(tileX, tileY);
+                grid.setTile(tileX, tileY, noise < 0.5);
+            }
+        }
+    }
+
+    private function randFunc() {
+        return Math.random() - 0.5;
+    }
+
     override public function update() {
         if(Key.pressed(Key.N)) {
             connectAllRooms();
@@ -380,6 +398,9 @@ class Level extends Entity {
         }
         if(Key.pressed(Key.U)) {
             drunkenWalk(false);
+        }
+        if(Key.pressed(Key.V)) {
+            diamondSquareNoise();
         }
         if(Key.pressed(Key.DIGIT_1)) {
             resetMapSize();
