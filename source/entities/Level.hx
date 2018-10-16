@@ -94,7 +94,7 @@ class Level extends Entity {
         spawnWalkerChance:Float = 0.05,
         destroyWalkerChance:Float = 0.05,
         maxWalkers:Int = 10,
-        spawnWalkersFromWalkers:Bool = false
+        spawnWalkersFromWalkers:Bool = true
     ) {
         walkers = new Array<Walker>();
 
@@ -224,6 +224,9 @@ class Level extends Entity {
         }
         if(Key.pressed(Key.D)) {
             drunkenWalk();
+        }
+        if(Key.pressed(Key.U)) {
+            drunkenWalk(false);
         }
         if(Key.pressed(Key.DIGIT_1)) {
             resetMapSize();

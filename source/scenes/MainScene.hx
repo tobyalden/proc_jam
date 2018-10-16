@@ -17,9 +17,12 @@ class MainScene extends Scene {
 R: Randomize
 A: Cellular Automata
 F: Fill All
-D: Drunken Walk
+D: Drunken Walk (Connected)
+U: Drunken Walk (Unconnected)
 I: Invert
 C: Clear All
+1: Reset size
+2 - 5: Scale up
         ");
         text.color = 0x00FF00;
         text.smooth = false;
