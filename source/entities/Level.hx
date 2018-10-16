@@ -198,6 +198,29 @@ class Level extends Entity {
         }
     }
 
+    private function floodFill(
+        fillX:Int, fillY:Int, rooms:Array<Array<Int>>, fillWith:Int
+    ) {
+        if(
+            isWithinMap(fillX, fillY)
+            && !grid.getTile(fillX, fillY)
+            && rooms[fillX][fillY] == 0
+        ) {
+            rooms[fillX][fillY] = fillWith;
+            floodFill(fillX + 1, fillY, rooms, fillWith);
+            floodFill(fillX - 1, fillY, rooms, fillWith);
+            floodFill(fillX, fillY + 1, rooms, fillWith);
+            floodFill(fillX, fillY - 1, rooms, fillWith);
+        }
+    }
+
+    private function isWithinMap(tileX:Int, tileY:Int) {
+        return (
+            tileX >= 0 && tileX < grid.columns
+            && tileY >= 0 && tileY < grid.rows
+        );
+    }
+
     private function clear() {
         grid.clearRect(0, 0, grid.columns, grid.rows);
     }
