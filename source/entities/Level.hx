@@ -5,6 +5,7 @@ import haxepunk.graphics.*;
 import haxepunk.graphics.tile.*;
 import haxepunk.input.*;
 import haxepunk.masks.*;
+import scenes.*;
 
 typedef Walker = {
     var x:Int;
@@ -13,6 +14,8 @@ typedef Walker = {
 }
 
 class Level extends Entity {
+    public static inline var TILE_SIZE = 8;
+
     private var walkers:Array<Walker>;
     private var grid:Grid;
     private var tiles:Tilemap;
@@ -21,17 +24,22 @@ class Level extends Entity {
         super(x, y);
 
         // Create map data
-        grid = new Grid(640, 360, 8, 8);
+        grid = new Grid(640, 360, TILE_SIZE, TILE_SIZE);
+        randomize();
 
         // Create tilemap from map data
+        updateGraphic();
+
+        // Set collision mask to map data
+        mask = grid;
+    }
+
+    private function updateGraphic() {
         tiles = new Tilemap(
             'graphics/tiles.png',
             grid.width, grid.height, grid.tileWidth, grid.tileHeight
         );
         tiles.loadFromString(grid.saveToString(',', '\n', '1', '0'));
-
-        // Set collision mask to map data and graphic to tilemap
-        mask = grid;
         graphic = tiles;
     }
 
@@ -150,6 +158,38 @@ class Level extends Entity {
         }
     }
 
+    private function scale(scaleFactor:Int = 2) {
+        var scaledGrid = new Grid(
+            grid.width * scaleFactor,
+            grid.height * scaleFactor,
+            TILE_SIZE, TILE_SIZE
+        );
+        for(tileX in 0...grid.columns) {
+            for(tileY in 0...grid.rows) {
+                for(scaleX in 0...scaleFactor) {
+                    for(scaleY in 0...scaleFactor) {
+                        scaledGrid.setTile(
+                            tileX * scaleFactor + scaleX,
+                            tileY * scaleFactor + scaleY,
+                            grid.getTile(tileX, tileY)
+                        );
+                    }
+                }
+            }
+        }
+        grid = scaledGrid;
+    }
+
+    private function resetMapSize() {
+        var newMap = new Grid(640, 360, TILE_SIZE, TILE_SIZE);
+        for(tileX in 0...newMap.columns) {
+            for(tileY in 0...newMap.rows) {
+                newMap.setTile(tileX, tileY, grid.getTile(tileX, tileY));
+            }
+        }
+        grid = newMap;
+    }
+
     private function invert() {
         for(tileX in 0...grid.columns) {
             for(tileY in 0...grid.rows) {
@@ -185,8 +225,24 @@ class Level extends Entity {
         if(Key.pressed(Key.D)) {
             drunkenWalk();
         }
+        if(Key.pressed(Key.DIGIT_1)) {
+            resetMapSize();
+            cast(scene, MainScene).resetCamera();
+        }
+        if(Key.pressed(Key.DIGIT_2)) {
+            scale(2);
+        }
+        if(Key.pressed(Key.DIGIT_3)) {
+            scale(3);
+        }
+        if(Key.pressed(Key.DIGIT_4)) {
+            scale(4);
+        }
+        if(Key.pressed(Key.DIGIT_5)) {
+            scale(5);
+        }
         if(Key.pressed(Key.ANY)) {
-            tiles.loadFromString(grid.saveToString(',', '\n', '1', '0'));
+            updateGraphic();
         }
         super.update();
     }

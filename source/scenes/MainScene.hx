@@ -28,6 +28,11 @@ C: Clear All
         cameraAnchor = new Vector2(HXP.width/2, HXP.height/2);
     }
 
+    public function resetCamera() {
+        camera.scale = 1;
+        cameraAnchor = new Vector2(HXP.width/2, HXP.height/2);
+    }
+
     override public function update() {
         if(Mouse.mouseDown) {
             var cameraShift = new Vector2(
@@ -40,7 +45,7 @@ C: Clear All
         camera.scale = Math.max(camera.scale, 0.1);
         camera.scale = Math.min(camera.scale, 1);
         if(camera.scale == 1) {
-            cameraAnchor = new Vector2(HXP.width/2, HXP.height/2);
+            resetCamera();
         }
         camera.anchor(cameraAnchor);
         super.update();
