@@ -47,9 +47,6 @@ C: Clear All
         camera.scale += Mouse.mouseWheelDelta * 0.002;
         camera.scale = Math.max(camera.scale, 0.1);
         camera.scale = Math.min(camera.scale, 1);
-        if(camera.scale == 1) {
-            resetCamera();
-        }
         camera.anchor(cameraAnchor);
         super.update();
         lastMouse = new Vector2(Mouse.mouseX, Mouse.mouseY);
