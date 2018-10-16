@@ -85,7 +85,8 @@ class Level extends Entity {
         changeDirectionChance:Float = 0.5,
         spawnWalkerChance:Float = 0.05,
         destroyWalkerChance:Float = 0.05,
-        maxWalkers:Int = 10
+        maxWalkers:Int = 10,
+        spawnWalkersFromWalkers:Bool = false
     ) {
         walkers = new Array<Walker>();
 
@@ -128,8 +129,12 @@ class Level extends Entity {
                 ) {
                     // Spawn a new walker
                     walkers.push({
-                        x: walker.x,
-                        y: walker.y,
+                        x: spawnWalkersFromWalkers ?
+                            walker.x : Std.random(grid.columns)
+                        ,
+                        y: spawnWalkersFromWalkers ?
+                            walker.y : Std.random(grid.rows)
+                        ,
                         direction: HXP.choose('n', 'e', 's', 'w')
                     });
                 }
