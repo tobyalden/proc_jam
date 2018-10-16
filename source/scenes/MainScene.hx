@@ -19,6 +19,7 @@ A: Cellular Automata
 F: Fill All
 D: Drunken Walk (Connected)
 U: Drunken Walk (Unconnected)
+N: Connect all rooms
 I: Invert
 C: Clear All
 1: Reset size

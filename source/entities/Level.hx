@@ -204,6 +204,12 @@ class Level extends Entity {
         }
     }
 
+    private function connectAllRooms() {
+        while(countRooms() > 1) {
+            connectTwoRooms(getRooms());
+        }
+    }
+
     private function connectTwoRooms(rooms:Array<Array<Int>>) {
         // Pick two random cells in different rooms
         var c1:Cell = getRandomCell();
@@ -273,6 +279,14 @@ class Level extends Entity {
     }
 
     private function getRooms() {
+        return getRoomsAndCount().rooms;
+    }
+
+    private function countRooms() {
+        return getRoomsAndCount().count;
+    }
+
+    private function getRoomsAndCount() {
         // Finds and numbers all discrete rooms,
         // then returns a 2D array of integers the size of the map,
         // where each cell contains its rooms number (0 for walls)
@@ -288,7 +302,7 @@ class Level extends Entity {
                 }
             }
         }
-        return rooms;
+        return {rooms: rooms, count: roomCount};
     }
 
     private function floodFill(
@@ -324,7 +338,7 @@ class Level extends Entity {
 
     override public function update() {
         if(Key.pressed(Key.N)) {
-            connectTwoRooms(getRooms());
+            connectAllRooms();
         }
         if(Key.pressed(Key.R)) {
             randomize();
