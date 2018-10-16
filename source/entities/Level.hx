@@ -5,12 +5,18 @@ import haxepunk.graphics.*;
 import haxepunk.graphics.tile.*;
 import haxepunk.input.*;
 import haxepunk.masks.*;
+import haxepunk.math.*;
 import scenes.*;
 
 typedef Walker = {
     var x:Int;
     var y:Int;
     var direction:String;
+}
+
+typedef Cell = {
+    var tileX:Int;
+    var tileY:Int;
 }
 
 class Level extends Entity {
@@ -198,6 +204,93 @@ class Level extends Entity {
         }
     }
 
+    private function connectTwoRooms(rooms:Array<Array<Int>>) {
+        // Pick two random cells in different rooms
+        var c1:Cell = getRandomCell();
+        while(rooms[c1.tileX][c1.tileY] == 0) {
+            c1 = getRandomCell();
+        }
+        var c2:Cell = getRandomCell();
+        while(
+            rooms[c2.tileX][c2.tileY] == 0
+            || rooms[c1.tileX][c1.tileY] == rooms[c2.tileX][c2.tileY]
+        ) {
+            c2 = getRandomCell();
+        }
+
+        // Get c1 and c2 as close as possible without leaving their rooms
+        for(tileX in 0...grid.columns) {
+            for(tileY in 0...grid.rows) {
+                var here = new Vector2(tileX, tileY);
+                if(rooms[tileX][tileY] == rooms[c1.tileX][c1.tileY]) {
+                    var c1Vector = new Vector2(c1.tileX, c1.tileY);
+                    var c2Vector = new Vector2(c2.tileX, c2.tileY);
+                    if(c1Vector.distance(c2Vector) > c2Vector.distance(here)) {
+                        c1 = {tileX: tileX, tileY: tileY};
+                    }
+                }
+                if(rooms[tileX][tileY] == rooms[c2.tileX][c2.tileY]) {
+                    var c1Vector = new Vector2(c1.tileX, c1.tileY);
+                    var c2Vector = new Vector2(c2.tileX, c2.tileY);
+                    if(c1Vector.distance(c2Vector) > c1Vector.distance(here)) {
+                        c2 = {tileX: tileX, tileY: tileY};
+                    }
+                }
+            }
+        }
+
+        // Dig a tunnel between the two cells
+        var cDig:Cell = {tileX: c1.tileX, tileY: c1.tileY};
+        cDig = moveCellTowardsCell(cDig, c2);
+        while (cDig != c2 && rooms[cDig.tileX][cDig.tileY] == 0) {
+            grid.setTile(cDig.tileX, cDig.tileY, false);
+            cDig = moveCellTowardsCell(cDig, c2);
+        }
+    }
+
+    private function moveCellTowardsCell(move:Cell, towards:Cell) {
+        if (move.tileX < towards.tileX) {
+            move.tileX = move.tileX + 1;
+        }
+        else if (move.tileX > towards.tileX) {
+            move.tileX = move.tileX - 1;
+        }
+        else if (move.tileY < towards.tileY) {
+            move.tileY = move.tileY + 1;
+        }
+        else if (move.tileY > towards.tileY) {
+            move.tileY = move.tileY - 1;
+        }
+        return move;
+    }
+
+    private function getRandomCell() {
+        var randomCell:Cell = {
+            tileX: Std.random(grid.columns),
+            tileY: Std.random(grid.rows)
+        };
+        return randomCell;
+    }
+
+    private function getRooms() {
+        // Finds and numbers all discrete rooms,
+        // then returns a 2D array of integers the size of the map,
+        // where each cell contains its rooms number (0 for walls)
+        var roomCount = 0;
+        var rooms = [
+            for (x in 0...grid.columns) [for (y in 0...grid.rows) 0]
+        ];
+        for(tileX in 0...grid.columns) {
+            for(tileY in 0...grid.rows) {
+                if(!grid.getTile(tileX, tileY) && rooms[tileX][tileY] == 0) {
+                    roomCount++;
+                    floodFill(tileX, tileY, rooms, roomCount);
+                }
+            }
+        }
+        return rooms;
+    }
+
     private function floodFill(
         fillX:Int, fillY:Int, rooms:Array<Array<Int>>, fillWith:Int
     ) {
@@ -230,6 +323,9 @@ class Level extends Entity {
     }
 
     override public function update() {
+        if(Key.pressed(Key.N)) {
+            connectTwoRooms(getRooms());
+        }
         if(Key.pressed(Key.R)) {
             randomize();
         }
