@@ -6,6 +6,7 @@ import haxepunk.graphics.tile.*;
 import haxepunk.input.*;
 import haxepunk.masks.*;
 import haxepunk.math.*;
+import hxnoise.Perlin;
 import scenes.*;
 
 typedef Walker = {
@@ -25,6 +26,7 @@ class Level extends Entity {
     private var walkers:Array<Walker>;
     private var grid:Grid;
     private var tiles:Tilemap;
+    private var perlin:Perlin;
 
     public function new(x:Float, y:Float) {
         super(x, y);
@@ -336,6 +338,24 @@ class Level extends Entity {
         grid.setRect(0, 0, grid.columns, grid.rows);
     }
 
+    private function perlinNoise(zoom:Float = 1) {
+        perlin = new Perlin();
+        var shift = new Vector2(
+            Std.random(2147483647), Std.random(2147483647)
+        );
+        for(tileX in 0...grid.columns) {
+            for(tileY in 0...grid.rows) {
+                var position = new Vector2(tileX, tileY);
+                position.scale(zoom);
+                position.add(shift);
+                var noise = perlin.OctavePerlin(
+                    position.x, position.y, 0.1, 5, 0.5, 0.25
+                );
+                grid.setTile(tileX, tileY, noise < 0.5);
+            }
+        }
+    }
+
     override public function update() {
         if(Key.pressed(Key.N)) {
             connectAllRooms();
@@ -376,6 +396,21 @@ class Level extends Entity {
         }
         if(Key.pressed(Key.DIGIT_5)) {
             scale(5);
+        }
+        if(Key.pressed(Key.DIGIT_6)) {
+            perlinNoise(2);
+        }
+        if(Key.pressed(Key.DIGIT_7)) {
+            perlinNoise(1);
+        }
+        if(Key.pressed(Key.DIGIT_8)) {
+            perlinNoise(0.5);
+        }
+        if(Key.pressed(Key.DIGIT_9)) {
+            perlinNoise(0.1);
+        }
+        if(Key.pressed(Key.DIGIT_0)) {
+            perlinNoise(0.03);
         }
         if(Key.pressed(Key.ANY)) {
             updateGraphic();

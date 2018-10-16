@@ -24,6 +24,7 @@ I: Invert
 C: Clear All
 1: Reset size
 2 - 5: Scale up
+6 - 0: Perlin noise (From small to big)
         ");
         text.color = 0x00FF00;
         text.smooth = false;
