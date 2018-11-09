@@ -52,11 +52,18 @@ class Level extends Entity {
         graphic = tiles;
     }
 
-    private function randomize(wallChance:Float = 0.55) {
+    private function randomize(wallChance:Float = 0.55, onlyFillFloors:Bool = false) {
         // Randomize the map by setting each tile to a wall or a floor
         for(tileX in 0...grid.columns) {
             for(tileY in 0...grid.rows) {
-                grid.setTile(tileX, tileY, wallChance > Math.random());
+                if(onlyFillFloors) {
+                    if(!grid.getTile(tileX, tileY)) {
+                        grid.setTile(tileX, tileY, wallChance > Math.random());
+                    }
+                }
+                else {
+                    grid.setTile(tileX, tileY, wallChance > Math.random());
+                }
             }
         }
     }
@@ -339,7 +346,7 @@ class Level extends Entity {
         grid.setRect(0, 0, grid.columns, grid.rows);
     }
 
-    private function perlinNoise(zoom:Float = 1) {
+    private function perlinNoise(zoom:Float = 1, onlyFillFloors:Bool = false) {
         perlin = new Perlin();
         var shift = new Vector2(
             Std.random(2147483647), Std.random(2147483647)
@@ -352,7 +359,14 @@ class Level extends Entity {
                 var noise = perlin.OctavePerlin(
                     position.x, position.y, 0.1, 5, 0.5, 0.25
                 );
-                grid.setTile(tileX, tileY, noise < 0.5);
+                if(onlyFillFloors) {
+                    if(!grid.getTile(tileX, tileY)) {
+                        grid.setTile(tileX, tileY, noise < 0.5);
+                    }
+                }
+                else {
+                    grid.setTile(tileX, tileY, noise < 0.5);
+                }
             }
         }
     }
@@ -370,16 +384,30 @@ class Level extends Entity {
         }
     }
 
+    private function flipHorizontally() {
+        for(tileX in 0...Std.int(grid.columns / 2)) {
+            for(tileY in 0...grid.rows) {
+                var temp = grid.getTile(tileX, tileY);
+                grid.setTile(tileX, tileY, grid.getTile(grid.columns - tileX - 1, tileY));
+                grid.setTile(grid.columns - tileX - 1, tileY, temp);
+            }
+        }
+    }
+
     private function randFunc() {
         return Math.random() - 0.5;
     }
 
     override public function update() {
+        var onlyFillFloors = Key.check(Key.BACKSPACE);
+        if(Key.pressed(Key.H)) {
+            flipHorizontally();
+        }
         if(Key.pressed(Key.N)) {
             connectAllRooms();
         }
         if(Key.pressed(Key.R)) {
-            randomize();
+            randomize(onlyFillFloors);
         }
         if(Key.pressed(Key.A)) {
             cellularAutomata();
@@ -419,19 +447,19 @@ class Level extends Entity {
             scale(5);
         }
         if(Key.pressed(Key.DIGIT_6)) {
-            perlinNoise(2);
+            perlinNoise(2, onlyFillFloors);
         }
         if(Key.pressed(Key.DIGIT_7)) {
-            perlinNoise(1);
+            perlinNoise(1, onlyFillFloors);
         }
         if(Key.pressed(Key.DIGIT_8)) {
-            perlinNoise(0.5);
+            perlinNoise(0.5, onlyFillFloors);
         }
         if(Key.pressed(Key.DIGIT_9)) {
-            perlinNoise(0.1);
+            perlinNoise(0.1, onlyFillFloors);
         }
         if(Key.pressed(Key.DIGIT_0)) {
-            perlinNoise(0.03);
+            perlinNoise(0.03, onlyFillFloors);
         }
         if(Key.pressed(Key.ANY)) {
             updateGraphic();
