@@ -31,15 +31,15 @@ class Level extends Entity {
     private var tiles:Tilemap;
     private var perlin:Perlin;
     private var diamondSquare:DiamondSquare;
-    private var mutate:Alarm;
     private var isMutating:Bool;
     private var mutationHistory:Array<Int>;
+    private var mutateTimer:Alarm;
 
     public function new(x:Float, y:Float) {
         super(x, y);
 
         // Create map data
-        grid = new Grid(640, 360, TILE_SIZE, TILE_SIZE);
+        grid = new Grid(1280, 640, TILE_SIZE, TILE_SIZE);
         randomize();
 
         // Create tilemap from map data
@@ -47,9 +47,10 @@ class Level extends Entity {
 
         // Set collision mask to map data
         mask = grid;
-        mutate = new Alarm(TIME_BETWEEN_MUTATIONS, TweenType.Looping);
         isMutating = true;
-        mutate.onComplete.bind(function() {
+        mutationHistory = new Array<Int>();
+        mutateTimer = new Alarm(TIME_BETWEEN_MUTATIONS, TweenType.Looping);
+        mutateTimer.onComplete.bind(function() {
             if(!isMutating) {
                 return;
             }
@@ -73,98 +74,136 @@ class Level extends Entity {
                     14, 14, 14, 14, 14, 14,
                     15, 15, 15,
                     16, 16, 16,
-                    17
+                    17,
+                    18, 18, 18, 18, 18, 18, 18, 18
                 )
             );
-
-            mutationHistory = new Array();
-
-            if(choice == -1) {
-                offsetChunks(
-                    Std.int(HXP.choose(1, -1)) * Random.randInt(10),
-                    Std.int(HXP.choose(1, -1)) * Random.randInt(10),
-                    //10, 10,
-                    //HXP.choose(2, 4, 8, 16, 32, 64, 128),
-                    HXP.choose(2, 4, 8, 16, 32),
-                    HXP.choose(2, 4, 8, 16, 32),
-                    //HXP.choose(4, 8, 32),
-                    //HXP.choose(4, 8, 32),
-                    //10, 10,
-                    HXP.choose(2, 4, 8, 16)
-                );
+            mutate(choice);
+            trace('organically mutated choice ${choice}');
+            if(choice != 18) {
+                mutationHistory.push(choice);
             }
-            else if(choice == 0) {
-                flipHorizontally();
-            }
-            else if(choice == 1) {
-                connectAllRooms();
-            }
-            else if(choice == 2) {
-                randomize(
-                    HXP.choose(0.33, 0.55, 0.8),
-                    HXP.choose(true, true, false)
-                );
-            }
-            else if(choice == 3) {
-                cellularAutomata(
-                    HXP.choose(2, 3, 4, 5), HXP.choose(4, 5, 6, 7)
-                );
-            }
-            else if(choice == 4) {
-                invert();
-            }
-            else if(choice == 5) {
-                drunkenWalk(HXP.choose(true, false));
-            }
-            else if(choice == 6) {
-                drunkenWalk(HXP.choose(true, false));
-            }
-            else if(choice == 7) {
-                diamondSquareNoise();
-            }
-            else if(choice == 8) {
-                resetMapSize();
-                cast(scene, MainScene).resetCamera();
-            }
-            else if(choice == 9) {
-                scale(2);
-                resetMapSize();
-                cast(scene, MainScene).resetCamera();
-            }
-            else if(choice == 10) {
-                scale(3);
-                resetMapSize();
-                cast(scene, MainScene).resetCamera();
-            }
-            else if(choice == 11) {
-                scale(4);
-                resetMapSize();
-                cast(scene, MainScene).resetCamera();
-            }
-            else if(choice == 12) {
-                scale(5);
-                resetMapSize();
-                cast(scene, MainScene).resetCamera();
-            }
-            else if(choice == 13) {
-                perlinNoise(2, HXP.choose(true, true, false));
-            }
-            else if(choice == 14) {
-                perlinNoise(1, HXP.choose(true, true, false));
-            }
-            else if(choice == 15) {
-                perlinNoise(0.5, HXP.choose(true, true, false));
-            }
-            else if(choice == 16) {
-                perlinNoise(0.1, HXP.choose(true, true, false));
-            }
-            else if(choice == 17) {
-                perlinNoise(0.03, HXP.choose(true, true, false));
-            }
-            updateGraphic();
-            mutationHistory.push(choice);
         });
-        addTween(mutate, true);
+        addTween(mutateTimer, true);
+    }
+
+    private function mutate(choice:Int) {
+        if(choice == -1) {
+            offsetChunks(
+                Std.int(HXP.choose(1, -1)) * Random.randInt(10),
+                Std.int(HXP.choose(1, -1)) * Random.randInt(10),
+                //10, 10,
+                //HXP.choose(2, 4, 8, 16, 32, 64, 128),
+                HXP.choose(2, 4, 8, 16, 32),
+                HXP.choose(2, 4, 8, 16, 32),
+                //HXP.choose(4, 8, 32),
+                //HXP.choose(4, 8, 32),
+                //10, 10,
+                HXP.choose(2, 4, 8, 16)
+            );
+        }
+        else if(choice == 0) {
+            flipHorizontally();
+        }
+        else if(choice == 1) {
+            connectAllRooms();
+        }
+        else if(choice == 2) {
+            randomize(
+                HXP.choose(0.33, 0.55, 0.8),
+                HXP.choose(true, true, false)
+            );
+        }
+        else if(choice == 3) {
+            cellularAutomata(
+                HXP.choose(2, 3, 4, 5), HXP.choose(4, 5, 6, 7)
+            );
+        }
+        else if(choice == 4) {
+            invert();
+        }
+        else if(choice == 5) {
+            drunkenWalk();
+        }
+        else if(choice == 6) {
+            drunkenWalk(false);
+        }
+        else if(choice == 7) {
+            diamondSquareNoise();
+        }
+        else if(choice == 8) {
+            resetMapSize();
+            cast(scene, MainScene).resetCamera();
+        }
+        else if(choice == 9) {
+            scale(2);
+            resetMapSize();
+            cast(scene, MainScene).resetCamera();
+        }
+        else if(choice == 10) {
+            scale(3);
+            resetMapSize();
+            cast(scene, MainScene).resetCamera();
+        }
+        else if(choice == 11) {
+            scale(4);
+            resetMapSize();
+            cast(scene, MainScene).resetCamera();
+        }
+        else if(choice == 12) {
+            scale(5);
+            resetMapSize();
+            cast(scene, MainScene).resetCamera();
+        }
+        else if(choice == 13) {
+            perlinNoise(2, false);
+        }
+        else if(choice == 14) {
+            perlinNoise(1, false);
+        }
+        else if(choice == 15) {
+            perlinNoise(0.5, false);
+        }
+        else if(choice == 16) {
+            perlinNoise(0.1, false);
+        }
+        else if(choice == 17) {
+            perlinNoise(0.03, false);
+        }
+        else if(choice == 18) {
+            //runback(HXP.choose(20, 30, 40));
+            runback(50);
+        }
+        else if(choice == 19) {
+            clear();
+        }
+        else if(choice == 20) {
+            fill();
+        }
+        else if(choice == 21) {
+            randomize(0.55);
+        }
+        updateGraphic();
+    }
+
+    private function runback(runbackAmount, goBackwards:Bool = false) {
+        for(i in 0...runbackAmount) {
+            if(i >= mutationHistory.length) {
+                return;
+            }
+            if(goBackwards) {
+                var choice = mutationHistory[mutationHistory.length - 1 - i];
+                mutate(choice);
+                trace('ranback choice ${choice} backwards');
+            }
+            else {
+                var choice = mutationHistory[
+                    mutationHistory.length - runbackAmount + i
+                ];
+                mutate(choice);
+                trace('ranback choice ${choice}');
+            }
+        }
     }
 
     private function updateGraphic() {
@@ -321,7 +360,8 @@ class Level extends Entity {
     }
 
     private function resetMapSize() {
-        var newMap = new Grid(640, 360, TILE_SIZE, TILE_SIZE);
+        //var newMap = new Grid(640, 360, TILE_SIZE, TILE_SIZE);
+        var newMap = new Grid(1280, 640, TILE_SIZE, TILE_SIZE);
         for(tileX in 0...newMap.columns) {
             for(tileY in 0...newMap.rows) {
                 newMap.setTile(tileX, tileY, grid.getTile(tileX, tileY));
@@ -554,6 +594,7 @@ class Level extends Entity {
 
     override public function update() {
         var onlyFillFloors = Key.check(Key.BACKSPACE);
+        var choice = -100;
         if(Key.pressed(Key.P)) {
             //horizontalOffset:Int,
             //verticalOffset:Int,
@@ -572,73 +613,106 @@ class Level extends Entity {
                 //10, 10,
                 HXP.choose(2, 4, 8, 16)
             );
+            choice = -1;
         }
         if(Key.pressed(Key.H)) {
-            flipHorizontally();
+            //flipHorizontally();
+            choice = 0;
         }
         if(Key.pressed(Key.N)) {
-            connectAllRooms();
+            //connectAllRooms();
+            choice = 1;
         }
         if(Key.pressed(Key.R)) {
-            randomize(0.55, onlyFillFloors);
+            //randomize(0.55, onlyFillFloors);
+            choice = 21;
         }
         if(Key.pressed(Key.A)) {
-            cellularAutomata();
+            //cellularAutomata();
+            choice = 3;
         }
         if(Key.pressed(Key.I)) {
-            invert();
+            //invert();
+            choice = 4;
         }
-        if(Key.pressed(Key.C)) {
-            clear();
-        }
-        if(Key.pressed(Key.F)) {
-            fill();
-        }
+
         if(Key.pressed(Key.D)) {
-            drunkenWalk();
+            //drunkenWalk();
+            choice = 5;
         }
         if(Key.pressed(Key.U)) {
-            drunkenWalk(false);
+            //drunkenWalk(false);
+            choice = 6;
         }
         if(Key.pressed(Key.V)) {
-            diamondSquareNoise();
+            //diamondSquareNoise();
+            choice = 7;
         }
         if(Key.pressed(Key.DIGIT_1)) {
-            resetMapSize();
-            cast(scene, MainScene).resetCamera();
+            //resetMapSize();
+            //cast(scene, MainScene).resetCamera();
+            choice = 8;
         }
         if(Key.pressed(Key.DIGIT_2)) {
-            scale(2);
+            //scale(2);
+            choice = 9;
         }
         if(Key.pressed(Key.DIGIT_3)) {
-            scale(3);
+            //scale(3);
+            choice = 10;
         }
         if(Key.pressed(Key.DIGIT_4)) {
-            scale(4);
+            //scale(4);
+            choice = 11;
         }
         if(Key.pressed(Key.DIGIT_5)) {
-            scale(5);
+            //scale(5);
+            choice = 12;
         }
         if(Key.pressed(Key.DIGIT_6)) {
-            perlinNoise(2, onlyFillFloors);
+            //perlinNoise(2, onlyFillFloors);
+            choice = 13;
         }
         if(Key.pressed(Key.DIGIT_7)) {
-            perlinNoise(1, onlyFillFloors);
+            //perlinNoise(1, onlyFillFloors);
+            choice = 14;
         }
         if(Key.pressed(Key.DIGIT_8)) {
-            perlinNoise(0.5, onlyFillFloors);
+            //perlinNoise(0.5, onlyFillFloors);
+            choice = 15;
         }
         if(Key.pressed(Key.DIGIT_9)) {
-            perlinNoise(0.1, onlyFillFloors);
+            //perlinNoise(0.1, onlyFillFloors);
+            choice = 16;
         }
         if(Key.pressed(Key.DIGIT_0)) {
-            perlinNoise(0.03, onlyFillFloors);
+            //perlinNoise(0.03, onlyFillFloors);
+            choice = 17;
+        }
+        if(Key.pressed(Key.Q)) {
+            //runback(HXP.choose(20, 30, 40));
+            choice = 18;
+        }
+        if(Key.pressed(Key.C)) {
+            //clear();
+            choice = 19;
+            mutationHistory = new Array<Int>();
+        }
+        if(Key.pressed(Key.F)) {
+            //fill();
+            choice = 20;
+            mutationHistory = new Array<Int>();
+        }
+        if(Key.pressed(Key.ANY)) {
+            mutate(choice);
+            if(choice != 18) {
+                mutationHistory.push(choice);
+            }
+            trace('manually mutated choice ${choice}');
+            updateGraphic();
         }
         if(Key.pressed(Key.M)) {
             isMutating = !isMutating;
-        }
-        if(Key.pressed(Key.ANY)) {
-            updateGraphic();
         }
         super.update();
     }
