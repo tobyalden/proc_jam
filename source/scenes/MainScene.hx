@@ -26,11 +26,12 @@ C: Clear All
 1: Reset size
 2 - 5: Scale up
 6 - 0: Perlin noise (From small to big)
+backspace: fill only
         ");
         text.color = 0x00FF00;
         text.smooth = false;
         text.setBorder();
-        addGraphic(text);
+        //addGraphic(text);
         cameraAnchor = new Vector2(HXP.width/2, HXP.height/2);
     }
 

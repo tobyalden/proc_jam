@@ -6,6 +6,8 @@ import haxepunk.graphics.tile.*;
 import haxepunk.input.*;
 import haxepunk.masks.*;
 import haxepunk.math.*;
+import haxepunk.Tween;
+import haxepunk.tweens.misc.*;
 import hxnoise.*;
 import scenes.*;
 
@@ -22,12 +24,14 @@ typedef Cell = {
 
 class Level extends Entity {
     public static inline var TILE_SIZE = 8;
+    public static inline var TIME_BETWEEN_MUTATIONS = 0.1;
 
     private var walkers:Array<Walker>;
     private var grid:Grid;
     private var tiles:Tilemap;
     private var perlin:Perlin;
     private var diamondSquare:DiamondSquare;
+    private var mutate:Alarm;
 
     public function new(x:Float, y:Float) {
         super(x, y);
@@ -41,6 +45,117 @@ class Level extends Entity {
 
         // Set collision mask to map data
         mask = grid;
+        mutate = new Alarm(TIME_BETWEEN_MUTATIONS, TweenType.Looping);
+        mutate.onComplete.bind(function() {
+            var choice = HXP.choose(
+                -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+                HXP.choose(
+                    0,
+                    1, 1, 1, 1, 1, 1, 1,
+                    2,
+                    3, 3, 3, 3, 3, 3, 3,
+                    4, 4,
+                    5, 5, 5, 5, 5, 5, 5,
+                    6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
+                    7,
+                    8,
+                    9, 9, 9, 9, 9,
+                    10, 10, 10, 10,
+                    11, 11, 11,
+                    12, 12, 12,
+                    13, 13, 13,
+                    14, 14, 14, 14, 14, 14,
+                    15, 15, 15,
+                    16, 16, 16,
+                    17
+                )
+            );
+
+            if(choice == -1) {
+                offsetChunks(
+                    Std.int(HXP.choose(1, -1)) * Random.randInt(10),
+                    Std.int(HXP.choose(1, -1)) * Random.randInt(10),
+                    //10, 10,
+                    //HXP.choose(2, 4, 8, 16, 32, 64, 128),
+                    HXP.choose(2, 4, 8, 16, 32),
+                    HXP.choose(2, 4, 8, 16, 32),
+                    //HXP.choose(4, 8, 32),
+                    //HXP.choose(4, 8, 32),
+                    //10, 10,
+                    HXP.choose(2, 4, 8, 16)
+                );
+            }
+            else if(choice == 0) {
+                flipHorizontally();
+            }
+            else if(choice == 1) {
+                connectAllRooms();
+            }
+            else if(choice == 2) {
+                randomize(
+                    HXP.choose(0.33, 0.55, 0.8),
+                    HXP.choose(true, true, false)
+                );
+            }
+            else if(choice == 3) {
+                cellularAutomata(
+                    HXP.choose(2, 3, 4, 5), HXP.choose(4, 5, 6, 7)
+                );
+            }
+            else if(choice == 4) {
+                invert();
+            }
+            else if(choice == 5) {
+                drunkenWalk(HXP.choose(true, false));
+            }
+            else if(choice == 6) {
+                drunkenWalk(HXP.choose(true, false));
+            }
+            else if(choice == 7) {
+                diamondSquareNoise();
+            }
+            else if(choice == 8) {
+                resetMapSize();
+                cast(scene, MainScene).resetCamera();
+            }
+            else if(choice == 9) {
+                scale(2);
+                resetMapSize();
+                cast(scene, MainScene).resetCamera();
+            }
+            else if(choice == 10) {
+                scale(3);
+                resetMapSize();
+                cast(scene, MainScene).resetCamera();
+            }
+            else if(choice == 11) {
+                scale(4);
+                resetMapSize();
+                cast(scene, MainScene).resetCamera();
+            }
+            else if(choice == 12) {
+                scale(5);
+                resetMapSize();
+                cast(scene, MainScene).resetCamera();
+            }
+            else if(choice == 13) {
+                perlinNoise(2, HXP.choose(true, true, false));
+            }
+            else if(choice == 14) {
+                perlinNoise(1, HXP.choose(true, true, false));
+            }
+            else if(choice == 15) {
+                perlinNoise(0.5, HXP.choose(true, true, false));
+            }
+            else if(choice == 16) {
+                perlinNoise(0.1, HXP.choose(true, true, false));
+            }
+            else if(choice == 17) {
+                perlinNoise(0.03, HXP.choose(true, true, false));
+            }
+            updateGraphic();
+        });
+        addTween(mutate, true);
     }
 
     private function updateGraphic() {
@@ -384,6 +499,36 @@ class Level extends Entity {
         }
     }
 
+    private function offsetChunks(
+        horizontalOffset:Int, verticalOffset:Int, chunkWidth:Int,
+        chunkHeight:Int, numberOfOffsets:Int
+    ) {
+        for(i in 0...numberOfOffsets) {
+            var chunkX = Random.randInt(grid.columns);
+            var chunkY = Random.randInt(grid.rows);
+            var tempChunk = new Grid(chunkWidth, chunkHeight, 1, 1);
+            for(tileX in 0...chunkWidth) {
+                for(tileY in 0...chunkHeight) {
+                    tempChunk.setTile(
+                        tileX, tileY,
+                        grid.getTile(chunkX + tileX, chunkY + tileY)
+                        //HXP.choose(true, false)
+                    );
+                    //grid.setTile(chunkX + tileX, chunkY + tileY, false);
+                }
+            }
+            for(tileX in 0...chunkWidth) {
+                for(tileY in 0...chunkHeight) {
+                    grid.setTile(
+                        chunkX + tileX + horizontalOffset,
+                        chunkY + tileY + verticalOffset,
+                        tempChunk.getTile(tileX, tileY)
+                    );
+                }
+            }
+        }
+    }
+
     private function flipHorizontally() {
         for(tileX in 0...Std.int(grid.columns / 2)) {
             for(tileY in 0...grid.rows) {
@@ -400,6 +545,25 @@ class Level extends Entity {
 
     override public function update() {
         var onlyFillFloors = Key.check(Key.BACKSPACE);
+        if(Key.pressed(Key.P)) {
+            //horizontalOffset:Int,
+            //verticalOffset:Int,
+            //chunkWidth:Int,
+            //chunkHeight:Int,
+            // numberOfOffsets:Int
+            offsetChunks(
+                Std.int(HXP.choose(1, -1)) * Random.randInt(10),
+                Std.int(HXP.choose(1, -1)) * Random.randInt(10),
+                //10, 10,
+                //HXP.choose(2, 4, 8, 16, 32, 64, 128),
+                HXP.choose(2, 4, 8, 16, 32),
+                HXP.choose(2, 4, 8, 16, 32),
+                //HXP.choose(4, 8, 32),
+                //HXP.choose(4, 8, 32),
+                //10, 10,
+                HXP.choose(2, 4, 8, 16)
+            );
+        }
         if(Key.pressed(Key.H)) {
             flipHorizontally();
         }
@@ -407,7 +571,7 @@ class Level extends Entity {
             connectAllRooms();
         }
         if(Key.pressed(Key.R)) {
-            randomize(onlyFillFloors);
+            randomize(0.55, onlyFillFloors);
         }
         if(Key.pressed(Key.A)) {
             cellularAutomata();
