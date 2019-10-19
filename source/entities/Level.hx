@@ -32,6 +32,8 @@ class Level extends Entity {
     private var perlin:Perlin;
     private var diamondSquare:DiamondSquare;
     private var mutate:Alarm;
+    private var isMutating:Bool;
+    private var mutationHistory:Array<Int>;
 
     public function new(x:Float, y:Float) {
         super(x, y);
@@ -46,7 +48,11 @@ class Level extends Entity {
         // Set collision mask to map data
         mask = grid;
         mutate = new Alarm(TIME_BETWEEN_MUTATIONS, TweenType.Looping);
+        isMutating = true;
         mutate.onComplete.bind(function() {
+            if(!isMutating) {
+                return;
+            }
             var choice = HXP.choose(
                 -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
                 HXP.choose(
@@ -59,10 +65,10 @@ class Level extends Entity {
                     6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
                     7,
                     8,
-                    9, 9, 9, 9, 9,
-                    10, 10, 10, 10,
-                    11, 11, 11,
-                    12, 12, 12,
+                    9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
+                    10, 10, 10, 10, 10, 10, 10, 10,
+                    11, 11, 11, 11, 11, 11,
+                    12, 12, 12, 12, 12,
                     13, 13, 13,
                     14, 14, 14, 14, 14, 14,
                     15, 15, 15,
@@ -70,6 +76,8 @@ class Level extends Entity {
                     17
                 )
             );
+
+            mutationHistory = new Array();
 
             if(choice == -1) {
                 offsetChunks(
@@ -154,6 +162,7 @@ class Level extends Entity {
                 perlinNoise(0.03, HXP.choose(true, true, false));
             }
             updateGraphic();
+            mutationHistory.push(choice);
         });
         addTween(mutate, true);
     }
@@ -624,6 +633,9 @@ class Level extends Entity {
         }
         if(Key.pressed(Key.DIGIT_0)) {
             perlinNoise(0.03, onlyFillFloors);
+        }
+        if(Key.pressed(Key.M)) {
+            isMutating = !isMutating;
         }
         if(Key.pressed(Key.ANY)) {
             updateGraphic();
