@@ -23,8 +23,8 @@ typedef Cell = {
 }
 
 class Level extends Entity {
-    public static inline var TILE_SIZE = 8;
-    public static inline var TIME_BETWEEN_MUTATIONS = 0.1;
+    public static inline var TILE_SIZE = 16;
+    public static inline var TIME_BETWEEN_MUTATIONS = 0.2;
 
     private var walkers:Array<Walker>;
     private var grid:Grid;
@@ -47,39 +47,39 @@ class Level extends Entity {
 
         // Set collision mask to map data
         mask = grid;
-        isMutating = true;
+        isMutating = false;
         mutationHistory = new Array<Int>();
         mutateTimer = new Alarm(TIME_BETWEEN_MUTATIONS, TweenType.Looping);
         mutateTimer.onComplete.bind(function() {
             if(!isMutating) {
                 return;
             }
-            var choice = HXP.choose(
-                -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-                HXP.choose(
-                    0,
-                    1, 1, 1, 1, 1, 1, 1,
-                    2,
-                    3, 3, 3, 3, 3, 3, 3,
-                    4, 4,
-                    5, 5, 5, 5, 5, 5, 5,
-                    6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
-                    7,
-                    8,
-                    9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
-                    10, 10, 10, 10, 10, 10, 10, 10,
-                    11, 11, 11, 11, 11, 11,
-                    12, 12, 12, 12, 12,
-                    13, 13, 13,
-                    14, 14, 14, 14, 14, 14,
-                    15, 15, 15,
-                    16, 16, 16,
-                    17,
-                    18, 18, 18, 18, 18, 18, 18, 18
-                )
-            );
+            var subchoices = [
+                0,
+                1, 1, 1, 1, 1, 1, 1,
+                2,
+                3, 3, 3, 3, 3, 3, 3,
+                4, 4,
+                5, 5, 5, 5, 5, 5, 5,
+                6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
+                7,
+                8,
+                9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
+                10, 10, 10, 10, 10, 10, 10, 10,
+                11, 11, 11, 11, 11, 11,
+                12, 12, 12, 12, 12,
+                13, 13, 13,
+                14, 14, 14, 14, 14, 14,
+                15, 15, 15,
+                16, 16, 16,
+                17,
+                18, 18, 18, 18, 18, 18, 18, 18
+            ];
+            var choices = [
+                -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, subchoices[Random.randInt(subchoices.length)]
+            ];
+            var choice = choices[Random.randInt(choices.length)];
             mutate(choice);
-            trace('organically mutated choice ${choice}');
             if(choice != 18) {
                 mutationHistory.push(choice);
             }
@@ -172,7 +172,7 @@ class Level extends Entity {
         }
         else if(choice == 18) {
             //runback(HXP.choose(20, 30, 40));
-            runback(50);
+            runback(10);
         }
         else if(choice == 19) {
             clear();

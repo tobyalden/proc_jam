@@ -15,23 +15,29 @@ class MainScene extends Scene {
         add(new Level(0, 0));
         var text = new Text("
 R: Randomize
-A: Cellular Automata
-F: Fill All
-D: Drunken Walk (Connected)
-U: Drunken Walk (Unconnected)
+A: Cellular automata
+D: Drunken walk (Connected)
+U: Drunken walk (Unconnected)
 N: Connect all rooms
-V: Diamond-square
+V: Diamond-square noise
+P: Offset chunks
 I: Invert
-C: Clear All
+F: Fill all
+C: Clear all
+H: Flip horizontally
+Q: Repeat last 10 steps
+M: Start / Stop Mutating
 1: Reset size
 2 - 5: Scale up
-6 - 0: Perlin noise (From small to big)
-backspace: fill only
+6 - 0: Perlin noise
         ");
         text.color = 0x00FF00;
         text.smooth = false;
         text.setBorder();
-        //addGraphic(text);
+        addGraphic(text, -5);
+        var bg = Image.createRect(text.width + 10, text.height, 0x000000);
+        bg.alpha = 0.5;
+        addGraphic(bg, -2);
         cameraAnchor = new Vector2(HXP.width/2, HXP.height/2);
     }
 
